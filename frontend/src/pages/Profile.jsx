@@ -19,6 +19,55 @@ const Label = ({ icon, label }) => (
   </div>
 );
 
+const ProfileSkeleton = () => (
+  <div className="min-h-screen bg-gray-50 px-6 py-10 sm:px-10 animate-pulse">
+    <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* Profile Card Skeleton */}
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8">
+        <div className="flex flex-col items-center text-center pb-6 border-b border-gray-100">
+          <div className="w-24 h-24 rounded-full bg-gray-200" />
+          <div className="mt-3 w-32 h-5 bg-gray-300 rounded" />
+          <div className="mt-2 w-48 h-4 bg-gray-200 rounded" />
+          <div className="mt-3 w-20 h-5 bg-green-100 rounded-full" />
+        </div>
+
+        <div className="mt-6 space-y-4">
+          {[1, 2, 3, 4, 5].map((_, i) => (
+            <div key={i} className="flex justify-between border-b py-2">
+              <div className="w-24 h-4 bg-gray-200 rounded" />
+              <div className="w-32 h-4 bg-gray-300 rounded" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Address Card Skeleton */}
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8">
+        <div className="flex justify-between items-center pb-6 border-b border-gray-100">
+          <div>
+            <div className="w-40 h-5 bg-gray-200 rounded" />
+            <div className="w-32 h-4 mt-2 bg-gray-100 rounded" />
+          </div>
+          <div className="w-20 h-8 bg-gray-200 rounded" />
+        </div>
+
+        <div className="mt-6 space-y-4">
+          {[1, 2, 3, 4, 5].map((_, i) => (
+            <div key={i} className="flex justify-between border-b py-2">
+              <div className="w-20 h-4 bg-gray-200 rounded" />
+              <div className="w-32 h-4 bg-gray-300 rounded" />
+            </div>
+          ))}
+
+          <div className="pt-6 border-t">
+            <div className="w-full h-10 bg-gray-300 rounded-md" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 function Profile() {
   const dispatch = useDispatch();
   const { user, loading, error } = useSelector((state) => state.user);
@@ -27,14 +76,7 @@ function Profile() {
     dispatch(getUserProfile());
   }, [dispatch]);
 
-  if (loading)
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-gray-600 font-medium text-xl animate-pulse">
-          Loading profile...
-        </div>
-      </div>
-    );
+  if (loading) return <ProfileSkeleton />;
 
   if (error)
     return (

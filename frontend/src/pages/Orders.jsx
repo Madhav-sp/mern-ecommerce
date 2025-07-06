@@ -1,50 +1,82 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../utils/axiosInstance";
-import { useSelector } from "react-redux"; // or context
+import { useSelector } from "react-redux";
+
+const OrderSkeleton = () => {
+  return (
+    <div className="space-y-6">
+      {[...Array(2)].map((_, i) => (
+        <div
+          key={i}
+          className="bg-white rounded-xl border border-gray-200 shadow-md p-6 animate-pulse space-y-4"
+        >
+          {/* Header Skeleton */}
+          <div className="flex justify-between items-center border-b pb-4">
+            <div className="space-y-1">
+              <div className="w-24 h-4 bg-gray-200 rounded" />
+              <div className="w-36 h-3 bg-gray-100 rounded" />
+            </div>
+            <div className="text-right space-y-1">
+              <div className="w-24 h-4 bg-gray-200 rounded" />
+              <div className="w-20 h-6 bg-gray-300 rounded" />
+            </div>
+          </div>
+
+          {/* Info Skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div className="space-y-1">
+              <div className="w-32 h-4 bg-gray-200 rounded" />
+              <div className="w-24 h-3 bg-gray-100 rounded" />
+            </div>
+            <div className="space-y-1">
+              <div className="w-28 h-4 bg-gray-200 rounded" />
+              <div className="w-32 h-3 bg-gray-100 rounded" />
+            </div>
+          </div>
+
+          {/* Items Skeleton */}
+          <div>
+            <div className="w-20 h-4 bg-gray-300 mb-3 rounded" />
+            {[...Array(2)].map((_, j) => (
+              <div
+                key={j}
+                className="flex justify-between items-center py-2 border-t border-gray-100"
+              >
+                <div className="w-32 h-4 bg-gray-200 rounded" />
+                <div className="w-24 h-4 bg-gray-100 rounded" />
+                <div className="w-20 h-4 bg-gray-200 rounded" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const Orders = () => {
-  const user = useSelector((state) => state.user.user); // or from auth context
+  const user = useSelector((state) => state.user.user);
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true); // Add loading state
-  const [error, setError] = useState(null); // Add error state
-
-  console.log(orders);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        setLoading(true); // Set loading to true before fetching
+        setLoading(true);
         const res = await axiosInstance.get(`/order/my-orders/${user._id}`);
         setOrders(res.data.orders);
       } catch (err) {
         console.error("Failed to fetch orders:", err);
-        setError("Failed to load orders. Please try again later."); // Set error message
+        setError("Failed to load orders. Please try again later.");
       } finally {
-        setLoading(false); // Set loading to false after fetching (success or error)
+        setLoading(false);
       }
     };
     if (user?._id) {
-      // Only fetch if user ID is available
       fetchOrders();
     }
-  }, [user?._id]); // Depend on user?._id to prevent unnecessary fetches
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500"></div>
-        <p className="ml-4 text-gray-600">Loading your orders...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="max-w-4xl mx-auto py-10 text-center text-red-600">
-        <p>{error}</p>
-      </div>
-    );
-  }
+  }, [user?._id]);
 
   return (
     <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
@@ -52,20 +84,22 @@ const Orders = () => {
         🧾 My Orders
       </h2>
 
-      {orders.length === 0 ? (
+      {loading ? (
+        <OrderSkeleton />
+      ) : error ? (
+        <div className="text-center text-red-600">{error}</div>
+      ) : orders.length === 0 ? (
         <div className="bg-white rounded-lg shadow-md p-8 text-center">
           <p className="text-gray-600 text-lg">
             You haven't placed any orders yet. Start shopping!
           </p>
-          {/* You could add a link to browse products here */}
         </div>
       ) : (
         <div className="space-y-6">
           {orders.map((order) => (
             <div
               key={order._id}
-              className="bg-white rounded-xl border border-gray-200
- shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+              className="bg-white rounded-xl border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
             >
               <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                 <div>

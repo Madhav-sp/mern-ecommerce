@@ -3,6 +3,45 @@ import axiosInstance from "../utils/axiosInstance";
 import { HiOutlineClipboardList } from "react-icons/hi";
 import { MdOutlineCheckCircle, MdOutlineCancel } from "react-icons/md";
 
+const OrderCardSkeleton = () => {
+  return (
+    <div className="bg-white rounded-xl shadow-md border border-gray-100 animate-pulse p-6 space-y-4">
+      <div className="flex flex-col sm:flex-row justify-between border-b border-gray-200 pb-4">
+        <div className="space-y-1">
+          <div className="w-20 h-4 bg-gray-200 rounded" />
+          <div className="w-40 h-4 bg-gray-300 rounded" />
+        </div>
+        <div className="text-right space-y-1 mt-4 sm:mt-0">
+          <div className="w-24 h-4 bg-gray-200 rounded" />
+          <div className="w-20 h-6 bg-gray-300 rounded" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="space-y-2">
+            <div className="w-24 h-3 bg-gray-200 rounded" />
+            <div className="w-32 h-4 bg-gray-300 rounded" />
+          </div>
+        ))}
+      </div>
+
+      <div className="pt-4 border-t border-gray-100 space-y-2">
+        <div className="w-24 h-4 bg-gray-300 rounded" />
+        {[...Array(2)].map((_, idx) => (
+          <div
+            key={idx}
+            className="flex justify-between items-center text-sm text-gray-800"
+          >
+            <div className="w-40 h-4 bg-gray-200 rounded" />
+            <div className="w-24 h-4 bg-gray-200 rounded" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const AllOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,18 +63,6 @@ const AllOrders = () => {
     fetchOrders();
   }, []);
 
-  if (loading)
-    return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <p className="text-lg text-gray-500 animate-pulse">Loading orders...</p>
-      </div>
-    );
-
-  if (error)
-    return (
-      <div className="text-center text-red-600 font-medium py-6">{error}</div>
-    );
-
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
       <h1 className="text-4xl font-bold text-center mb-10 text-gray-800 flex justify-center items-center gap-2">
@@ -43,7 +70,14 @@ const AllOrders = () => {
         All Orders
       </h1>
 
-      {orders.length === 0 ? (
+      {loading ? (
+        <div className="space-y-8">
+          <OrderCardSkeleton />
+          <OrderCardSkeleton />
+        </div>
+      ) : error ? (
+        <div className="text-center text-red-600 font-medium py-6">{error}</div>
+      ) : orders.length === 0 ? (
         <div className="text-center text-gray-500 text-lg">
           No orders found 😔
         </div>

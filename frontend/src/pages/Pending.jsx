@@ -1,129 +1,184 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../utils/axiosInstance";
-import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
 
-const Pending = () => {
+// Skeleton Loader
+const OrderSkeleton = () => {
+  return (
+    <div className="space-y-6">
+      {[1, 2].map((_, i) => (
+        <div
+          key={i}
+          className="bg-white rounded-xl border border-gray-200 shadow animate-pulse"
+        >
+          <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+            <div>
+              <div className="w-32 h-4 bg-gray-200 rounded mb-2"></div>
+              <div className="w-44 h-3 bg-gray-200 rounded"></div>
+            </div>
+            <div className="text-right">
+              <div className="w-24 h-4 bg-gray-200 rounded mb-2"></div>
+              <div className="w-20 h-6 bg-gray-300 rounded"></div>
+            </div>
+          </div>
+
+          <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <div className="w-32 h-4 bg-gray-200 rounded mb-2"></div>
+              <div className="w-20 h-4 bg-gray-300 rounded"></div>
+            </div>
+            <div>
+              <div className="w-32 h-4 bg-gray-200 rounded mb-2"></div>
+              <div className="w-28 h-4 bg-gray-300 rounded"></div>
+            </div>
+          </div>
+
+          <div className="p-6 pt-0">
+            <div className="w-24 h-4 bg-gray-200 rounded mb-4"></div>
+            <ul className="space-y-2">
+              {[1, 2].map((_, j) => (
+                <li
+                  key={j}
+                  className="flex justify-between items-center py-2 border-t border-gray-100"
+                >
+                  <div className="w-1/2 h-4 bg-gray-300 rounded"></div>
+                  <div className="w-20 h-4 bg-gray-200 rounded"></div>
+                  <div className="w-20 h-4 bg-gray-300 rounded"></div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const Orders = () => {
+  const user = useSelector((state) => state.user.user);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  const fetchPendingOrders = async () => {
-    try {
-      setLoading(true);
-      const res = await axiosInstance.get("/order/getpendingorders");
-      setOrders(res.data.pendingOrders);
-    } catch (err) {
-      console.error("Error fetching pending orders:", err);
-      setError("Failed to fetch pending orders.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchPendingOrders();
-  }, []);
-
-  const handleMarkDelivered = async (orderId) => {
-    try {
-      const res = await axiosInstance.put(`/order/mark-delivered/${orderId}`);
-      if (res.data.success) {
-        toast.success("Order marked as delivered!");
-        fetchPendingOrders();
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        const res = await axiosInstance.get(`/order/my-orders/${user._id}`);
+        setOrders(res.data.orders);
+      } catch (err) {
+        console.error("Failed to fetch orders:", err);
+        setError("Failed to load orders. Please try again later.");
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error("Failed to mark as delivered:", err);
-      toast.error("Could not update delivery status");
-    }
-  };
+    };
 
-  if (loading)
-    return <div className="p-8 text-center">Loading pending orders...</div>;
-  if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
+    if (user?._id) {
+      fetchOrders();
+    }
+  }, [user?._id]);
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+        <h2 className="text-4xl font-extrabold text-gray-900 mb-8 text-center">
+          🧾 My Orders
+        </h2>
+        <OrderSkeleton />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-4xl mx-auto py-10 text-center text-red-600">
+        <p>{error}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-6xl mx-auto py-10 px-4">
-      <h2 className="text-3xl font-bold mb-6 text-center text-yellow-600">
-        🚚 Pending Orders
+    <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+      <h2 className="text-4xl font-extrabold text-gray-900 mb-8 text-center">
+        🧾 My Orders
       </h2>
 
       {orders.length === 0 ? (
-        <p className="text-gray-600 text-center">
-          All orders have been delivered! 🎉
-        </p>
+        <div className="bg-white rounded-lg shadow-md p-8 text-center">
+          <p className="text-gray-600 text-lg">
+            You haven't placed any orders yet. Start shopping!
+          </p>
+        </div>
       ) : (
         <div className="space-y-6">
           {orders.map((order) => (
             <div
               key={order._id}
-              className="bg-white p-6 rounded-lg border border-gray-200
- shadow-lg transition hover:shadow-xl"
+              className="bg-white rounded-xl border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
             >
-              {/* Order Top Info */}
-              <div className="flex justify-between items-center mb-4">
+              <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                 <div>
-                  <p className="text-xs text-gray-500">Order ID:</p>
-                  <p className="text-sm font-mono">{order._id}</p>
+                  <p className="text-sm font-medium text-gray-500">Order ID:</p>
+                  <p className="text-gray-800 font-mono text-xs break-all">
+                    {order._id}
+                  </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-gray-500">Total:</p>
-                  <p className="text-xl font-bold text-purple-700">
-                    ₹{order.totalPrice}
+                  <p className="text-sm font-medium text-gray-500">
+                    Total Amount:
+                  </p>
+                  <p className="font-bold text-2xl text-purple-600">
+                    ₹{order.totalPrice.toLocaleString("en-IN")}
                   </p>
                 </div>
               </div>
 
-              {/* Info Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm mb-4">
+              <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-gray-500">User Info:</p>
-                  <p className="text-gray-800 text-sm leading-snug">
-                    {order.user?.name} <br />
-                    {order.user?.email} <br />
-                    {order.user?.phone}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Order Date:</p>
-                  <p>{new Date(order.createdAt).toLocaleDateString("en-IN")}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Paid:</p>
+                  <p className="font-medium text-gray-700">Payment Status:</p>
                   <p
-                    className={order.isPaid ? "text-green-600" : "text-red-500"}
+                    className={`mt-1 font-semibold ${
+                      order.isPaid ? "text-green-600" : "text-red-500"
+                    }`}
                   >
-                    {order.isPaid ? "✅ Yes" : "❌ No"}
+                    {order.isPaid ? "✅ Paid" : "❌ Not Paid"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Delivery Status:</p>
-                  <p className="text-yellow-600 font-semibold">⏳ Pending</p>
+                  <p className="font-medium text-gray-700">Order Date:</p>
+                  <p className="mt-1 text-gray-600">
+                    {order.paidAt
+                      ? new Date(order.paidAt).toLocaleDateString("en-IN", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })
+                      : "N/A"}
+                  </p>
                 </div>
               </div>
 
-              {/* Items List */}
-              <div>
-                <p className="font-semibold text-gray-700 mb-2">🛍️ Items:</p>
-                <ul className="border-t border-gray-100 divide-y divide-gray-100">
-                  {order.orderItems.map((item, idx) => (
-                    <li key={idx} className="py-2 flex justify-between text-sm">
-                      <span>{item.name}</span>
-                      <span className="text-gray-600">
-                        ₹{item.price} × {item.qty} = ₹{item.price * item.qty}
+              <div className="p-6 pt-0">
+                <p className="font-medium text-gray-700 mb-3">Items:</p>
+                <ul className="divide-y divide-gray-100 border-t border-b border-gray-100">
+                  {order.orderItems.map((item, index) => (
+                    <li
+                      key={index}
+                      className="flex justify-between items-center py-3"
+                    >
+                      <span className="text-gray-800 font-medium flex-1">
+                        {item.name}
+                      </span>
+                      <span className="text-gray-600 ml-4 flex-shrink-0">
+                        ₹{item.price.toLocaleString("en-IN")} x {item.quantity}
+                      </span>
+                      <span className="text-gray-800 font-semibold ml-4 flex-shrink-0">
+                        ₹{(item.price * item.quantity).toLocaleString("en-IN")}
                       </span>
                     </li>
                   ))}
                 </ul>
-              </div>
-
-              {/* ✅ Mark as Delivered Button */}
-              <div className="mt-4 text-right">
-                <button
-                  onClick={() => handleMarkDelivered(order._id)}
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow"
-                >
-                  Mark as Delivered
-                </button>
               </div>
             </div>
           ))}
@@ -133,4 +188,4 @@ const Pending = () => {
   );
 };
 
-export default Pending;
+export default Orders;
