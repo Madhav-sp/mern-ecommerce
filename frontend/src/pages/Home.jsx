@@ -3,6 +3,12 @@ import { NavLink } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
 import HOMO_LOGO from "../assets/HOMO_LOGO.jpg";
 
+const SkeletonCard = ({ height = "h-72" }) => (
+  <div
+    className={`relative w-full ${height} rounded-xl bg-gray-200 animate-pulse`}
+  />
+);
+
 const Home = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -59,9 +65,9 @@ const Home = () => {
         <h2 className="text-2xl font-semibold mb-4">Featured Bracelets</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {loading ? (
-            <p className="text-gray-600 col-span-full">
-              Loading featured products...
-            </p>
+            Array.from({ length: 3 }).map((_, i) => (
+              <SkeletonCard key={i} height="h-72" />
+            ))
           ) : featured.length > 0 ? (
             featured.map((item) => (
               <NavLink to="/bracelets" key={item._id}>
@@ -95,9 +101,9 @@ const Home = () => {
         <h2 className="text-2xl font-semibold mb-4">New Arrivals</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           {loading ? (
-            <p className="text-gray-600 col-span-full">
-              Loading new arrivals...
-            </p>
+            Array.from({ length: 4 }).map((_, i) => (
+              <SkeletonCard key={i} height="h-52" />
+            ))
           ) : newArrivals.length > 0 ? (
             newArrivals.map((item) => (
               <NavLink to="/bracelets" key={item._id}>

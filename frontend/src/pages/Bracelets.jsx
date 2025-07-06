@@ -8,6 +8,11 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
 import toast from "react-hot-toast";
 
+// Skeleton component
+const SkeletonCard = () => (
+  <div className="bg-gray-200 rounded-xl animate-pulse aspect-[3/4] w-full" />
+);
+
 const Bracelets = () => {
   const navigate = useNavigate();
   const [bracelets, setBracelets] = useState([]);
@@ -15,6 +20,7 @@ const Bracelets = () => {
   const [sort, setSort] = useState("");
   const [priceFilter, setPriceFilter] = useState("");
   const [materialFilter, setMaterialFilter] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const { user } = useSelector((state) => state.user);
 
@@ -24,8 +30,10 @@ const Bracelets = () => {
         const res = await axiosInstance.get("/product");
         setBracelets(res.data);
         setFiltered(res.data);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching bracelets:", error);
+        setLoading(false);
       }
     };
     fetchBracelets();
@@ -125,64 +133,68 @@ const Bracelets = () => {
 
         {/* Product Grid */}
         <div className="md:w-3/4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((item, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-xl shadow hover:shadow-lg transition duration-300 cursor-pointer overflow-hidden"
-              onClick={() => navigate(`/bracelets/${item._id}`)}
-            >
-              <div className="relative aspect-[3/4] w-full group">
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute bottom-0 left-0 w-full px-3 py-2 text-white transition-all duration-300">
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  <div className="relative z-10">
-                    <h3 className="text-sm font-medium truncate">
-                      {item.name}
-                    </h3>
-                    <p className="flex items-center text-xs mt-1">
-                      <MdOutlineCurrencyRupee className="mr-1 text-sm" />
-                      {item.price}
-                    </p>
+          {loading
+            ? Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
+            : filtered.map((item, index) => (
+                <div
+                  key={index}
+                  className="bg-white rounded-xl shadow hover:shadow-lg transition duration-300 cursor-pointer overflow-hidden"
+                  onClick={() => navigate(`/bracelets/${item._id}`)}
+                >
+                  <div className="relative aspect-[3/4] w-full group">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute bottom-0 left-0 w-full px-3 py-2 text-white transition-all duration-300">
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      <div className="relative z-10">
+                        <h3 className="text-sm font-medium truncate">
+                          {item.name}
+                        </h3>
+                        <p className="flex items-center text-xs mt-1">
+                          <MdOutlineCurrencyRupee className="mr-1 text-sm" />
+                          {item.price}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              {/* Admin Controls */}
-              {user?.isAdmin && (
-                <div className="p-3 flex justify-end gap-3 text-gray-500 text-lg">
-                  <button
-                    className="hover:text-blue-600"
-                    title="Edit"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/dashboard/edit/${item._id}`);
-                    }}
-                  >
-                    <FaRegEdit size={18} />
-                  </button>
-                  <button
-                    className="hover:text-red-600"
-                    title="Delete"
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      await axiosInstance.delete("/product/delete", {
-                        data: {
-                          id: item._id,
-                        },
-                      });
-                      toast.success("after deletion do reload the website once!"); // Replace with delete logic
-                    }}
-                  >
-                    <MdDeleteOutline size={21} />
-                  </button>
+                  {/* Admin Controls */}
+                  {user?.isAdmin && (
+                    <div className="p-3 flex justify-end gap-3 text-gray-500 text-lg">
+                      <button
+                        className="hover:text-blue-600"
+                        title="Edit"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/dashboard/edit/${item._id}`);
+                        }}
+                      >
+                        <FaRegEdit size={18} />
+                      </button>
+                      <button
+                        className="hover:text-red-600"
+                        title="Delete"
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          await axiosInstance.delete("/product/delete", {
+                            data: {
+                              id: item._id,
+                            },
+                          });
+                          toast.success(
+                            "after deletion do reload the website once!"
+                          );
+                        }}
+                      >
+                        <MdDeleteOutline size={21} />
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          ))}
+              ))}
         </div>
       </div>
     </div>
