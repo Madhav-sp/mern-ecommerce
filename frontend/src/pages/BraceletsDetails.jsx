@@ -1,17 +1,27 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 
 const BraceletsDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [bracelet, setBracelet] = useState(null);
   const [selectedImage, setSelectedImage] = useState("");
   const [quantity, setQuantity] = useState(1);
   const user = useSelector((state) => state.user.user);
 
   const handleBuyNow = async () => {
+    if (!user) {
+      navigate("/auth/login", { state: { from: location.pathname } });
+      return;
+    }
+
+    toast.success("Redirecting to payment...");
+
     try {
       const { data } = await axiosInstance.post("/payment/create-order", {
         amount: bracelet.price * quantity,
@@ -26,32 +36,35 @@ const BraceletsDetails = () => {
         order_id: data.order.id,
         handler: async function (response) {
           try {
-            const { data: verifyData } = await axiosInstance.post("/payment/verify", {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              userId: user?._id || "guest", // Replace this with real user._id if available
-              orderItems: [
-                {
-                  name: bracelet.name,
-                  price: bracelet.price,
-                  quantity: quantity,
-                  product: bracelet._id,
+            const { data: verifyData } = await axiosInstance.post(
+              "/payment/verify",
+              {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                userId: user?._id || "guest",
+                orderItems: [
+                  {
+                    name: bracelet.name,
+                    price: bracelet.price,
+                    quantity: quantity,
+                    product: bracelet._id,
+                  },
+                ],
+                shippingAddress: {
+                  address: "Demo Street 101",
+                  city: "Hyderabad",
+                  postalCode: "500001",
+                  country: "India",
                 },
-              ],
-              shippingAddress: {
-                address: "Demo Street 101",
-                city: "Hyderabad",
-                postalCode: "500001",
-                country: "India",
-              },
-              totalPrice: bracelet.price * quantity,
-            });
+                totalPrice: bracelet.price * quantity,
+              }
+            );
 
             if (verifyData.success) {
-              toast.success(" Payment successful!");
+              toast.success("Payment successful!");
             } else {
-              toast.error(" Payment verification failed or tampered!");
+              toast.error("Payment verification failed or tampered!");
             }
           } catch (err) {
             toast.error("Error verifying payment.");
@@ -102,8 +115,7 @@ const BraceletsDetails = () => {
   const discountPercentage =
     bracelet.originalPrice && bracelet.originalPrice > bracelet.price
       ? Math.round(
-          ((bracelet.originalPrice - bracelet.price) /
-            bracelet.originalPrice) *
+          ((bracelet.originalPrice - bracelet.price) / bracelet.originalPrice) *
             100
         )
       : null;

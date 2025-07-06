@@ -1,4 +1,3 @@
-// AppRoutes.js
 import React from "react";
 import { Routes, Route, Outlet, useLocation, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -14,7 +13,7 @@ import PrivateRoute from "../components/ProtectedRoute";
 import Profile from "./Profile";
 import Publish from "./Publish";
 import Navbar from "../components/Navbar";
-import Header from "../components/Header";
+import Header from "../components/Footer";
 import BraceletsDetails from "./BraceletsDetails";
 import UpdateBracelet from "./UpdateBracelet";
 import Orders from "./Orders";
@@ -28,7 +27,6 @@ const Layout = () => {
   const isDashboard = location.pathname.startsWith("/dashboard");
 
   if (isAuthPage) {
-    // ✅ Minimal layout for signup/login
     return (
       <div className="min-h-screen bg-gray-50">
         <Outlet />
@@ -55,35 +53,32 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route element={<Layout />}>
-        {/* ✅ Protected Routes */}
+        {/* 🔓 Public Routes */}
+        <Route path="/" element={<Home />} />
+        <Route path="/bracelets" element={<Bracelets />} />
+        <Route path="/bracelets/:id" element={<BraceletsDetails />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/auth/signup" element={<Signup />} />
+        <Route path="/auth/login" element={<Login />} />
+
+        {/* 🔒 Protected Routes */}
         <Route element={<PrivateRoute />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/bracelets" element={<Bracelets />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/bracelets/:id" element={<BraceletsDetails />} />
           <Route path="/dashboard/edit/:id" element={<UpdateBracelet />} />
 
-          {/* Dashboard + Nested */}
           <Route path="/dashboard" element={<Dashboard />}>
             <Route path="profile" element={<Profile />} />
             <Route path="orders" element={<Orders />} />
 
-            {/* ✅ Admin routes */}
+            {/* Admin Routes */}
             {user?.isAdmin && <Route path="publish" element={<Publish />} />}
             {user?.isAdmin && (
               <Route path="allorders" element={<AllOrders />} />
             )}
-            {user?.isAdmin && (
-              <Route path="pending" element={<Pending />} />
-            )}
+            {user?.isAdmin && <Route path="pending" element={<Pending />} />}
           </Route>
         </Route>
 
-        {/* 🔓 Public Routes */}
-        <Route path="/auth/signup" element={<Signup />} />
-        <Route path="/auth/login" element={<Login />} />
-
-        {/* 🚧 Fallback */}
+        {/* 🧭 Fallback */}
         <Route path="*" element={<Navigate to="/" />} />
       </Route>
     </Routes>

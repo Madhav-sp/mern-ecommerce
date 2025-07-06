@@ -10,31 +10,37 @@ export const generateToken = (userId) => {
 }
 // /api/v1/users/logout
 export const logoutUser = (req, res) => {
+  const isProd = process.env.NODE_ENV === "production";
+
   res.clearCookie("token", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // only over HTTPS in production
-    sameSite: "None", // Important for cross-origin cookies
+    secure: isProd, // ❗ Only secure in production (localhost blocks this)
+    sameSite: isProd ? "None" : "Lax", // ✅ Match login cookie
   });
 
   return res.status(200).json({ message: "Logged out successfully" });
 };
 
+
+
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check credentials
     const user = await User.findOne({ email });
+
     if (!user || !(await user.matchPassword(password))) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    // ✅ Set token in HTTP-only cookie
+    const isProd = process.env.NODE_ENV === "production";
+
+    // ✅ Set token in HTTP-only cookie with correct SameSite
     res
       .cookie("token", generateToken(user._id), {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        secure: isProd, // ✅ secure in prod only
+        sameSite: isProd ? "None" : "Lax", // ✅ Lax in dev, None in prod
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       })
       .status(200)
@@ -52,6 +58,7 @@ export const loginUser = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
   
 
 export const registerUser = async (req, res) => {

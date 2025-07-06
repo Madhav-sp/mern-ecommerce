@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import axiosInstance from "../utils/axiosInstance";
-import { logoutUser } from "../redux/user/userSlice";
+import { logoutFromServer, logoutUser } from "../redux/user/userSlice";
 
 import {
   MdLogout,
@@ -14,6 +14,7 @@ import {
 } from "react-icons/md";
 import { CgProfile } from "react-icons/cg";
 import { BiSolidDashboard } from "react-icons/bi";
+import toast from "react-hot-toast";
 
 const UserLayout = () => {
   const dispatch = useDispatch();
@@ -27,16 +28,15 @@ const UserLayout = () => {
     setSidebarOpen(false);
   }, [location.pathname]);
 
+  // ✅ Updated logout function
   const handleLogout = async () => {
     try {
-      const res = await axiosInstance.delete("/users/logout", {
-        withCredentials: true,
-      });
-      dispatch(logoutUser());
-      navigate("/auth/login");
-      console.log(res.data.message);
+      await dispatch(logoutFromServer()).unwrap();
+      dispatch(logoutUser()); // Clear Redux state manually (just in case)
+      toast.success("Logged out successfully");
+      navigate("/");
     } catch (err) {
-      console.error("Logout error:", err.response?.data || err.message);
+      toast.error(err || "Logout failed");
     }
   };
 

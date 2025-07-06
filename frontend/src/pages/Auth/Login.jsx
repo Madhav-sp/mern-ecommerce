@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { loginUser, setUser } from "../../redux/user/userSlice";
 import toast from "react-hot-toast";
 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [showPassword, setShowPassword] = useState(false);
-  const [loginSuccess, setLoginSuccess] = useState(false); 
+  const [loginSuccess, setLoginSuccess] = useState(false);
+
+  const from = location.state?.from || "/"; // 👈 Capture original page
 
   const handleformSubmit = async (e) => {
     e.preventDefault();
@@ -18,20 +22,18 @@ const Login = () => {
     try {
       const res = await dispatch(loginUser(formInputData)).unwrap();
       dispatch(setUser(res));
-      toast.success(" Login successfull");
-      setLoginSuccess(true); 
-      
+      toast.success("Login successful");
+      setLoginSuccess(true);
     } catch (error) {
-      toast.error( error);
+      toast.error(error);
     }
   };
 
- 
   useEffect(() => {
     if (loginSuccess) {
-      navigate("/");
+      navigate(from, { replace: true }); // 👈 Redirect back after login
     }
-  }, [loginSuccess, navigate]);
+  }, [loginSuccess, navigate, from]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
