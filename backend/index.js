@@ -13,10 +13,17 @@ dotenv.config();
 // Middleware
 
 
+// app.use(
+//   cors({
+//     origin: "http://localhost:5173", // ✅ exact origin only
+//     credentials: true, // ✅ allow cookies
+//   })
+// );
+
 app.use(
   cors({
-    origin: "http://localhost:5173", // ✅ exact origin only
-    credentials: true, // ✅ allow cookies
+    origin: [ "https://beadbracelets.onrender.com"],
+    credentials: true,
   })
 );
 
