@@ -4,6 +4,38 @@ import axiosInstance from "../utils/axiosInstance";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 
+// Skeleton UI Component
+const Skeleton = () => (
+  <div className="min-h-screen bg-white px-4 py-20 flex justify-center">
+    <div className="max-w-7xl w-full grid md:grid-cols-2 gap-16 animate-pulse">
+      {/* Skeleton Image Section */}
+      <div className="flex flex-col gap-4">
+        <div className="w-full h-[480px] bg-gray-200 rounded-xl" />
+        <div className="flex gap-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="w-20 h-20 bg-gray-200 rounded-lg" />
+          ))}
+        </div>
+      </div>
+
+      {/* Skeleton Text Section */}
+      <div className="space-y-5">
+        <div className="h-8 bg-gray-200 rounded w-3/4" />
+        <div className="h-6 bg-gray-200 rounded w-1/2" />
+        <div className="h-24 bg-gray-200 rounded" />
+        <div className="h-6 bg-gray-200 rounded w-1/3" />
+        <div className="h-6 bg-gray-200 rounded w-1/2" />
+        <div className="h-6 bg-gray-200 rounded w-2/3" />
+        <div className="flex gap-4 mt-4">
+          <div className="w-20 h-10 bg-gray-200 rounded-md" />
+          <div className="flex-1 h-10 bg-gray-200 rounded-md" />
+          <div className="flex-1 h-10 bg-gray-200 rounded-md" />
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 const BraceletsDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -103,13 +135,7 @@ const BraceletsDetails = () => {
     fetchBracelet();
   }, [id]);
 
-  if (!bracelet) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600">
-        Loading product details...
-      </div>
-    );
-  }
+  if (!bracelet) return <Skeleton />;
 
   const productImages = bracelet.images || [bracelet.image];
   const discountPercentage =
