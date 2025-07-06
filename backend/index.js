@@ -22,7 +22,7 @@ dotenv.config();
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://beadbracelets.onrender.com"],
+    origin: [ "https://beadbracelets.onrender.com"],
     credentials: true,
   })
 );
